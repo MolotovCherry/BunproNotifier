@@ -1,0 +1,32 @@
+[package]
+name = "bunpro-notifier"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+notify-rust = "4.12.0"
+serde = { version = "1.0.228", features = ["derive"] }
+snafu = "0.8.9"
+const_format = "0.2.35"
+jiff = { version = "0.2.21", features = ["serde"] }
+ureq = { version = "3.2.0", features = ["json"] }
+ron = "0.12.0"
+include_dir = "0.7.4"
+sayuri = "0.1.4"
+directories = "6.0.0"
+crossbeam = "0.8.4"
+log = "0.4.29"
+env_logger = "0.11.9"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55.0"
+
+[target.'cfg(windows)'.dependencies.windows]
+version = "0.62.2"
+features = [
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging"
+]
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1.12"

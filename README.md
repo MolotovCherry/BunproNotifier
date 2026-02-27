@@ -1,0 +1,28 @@
+# BunproNotifier
+
+A simple app that sends you system notifications when it's time to do your reviews.
+
+## Configuration
+
+The configuration mirrors the options on Bunpro's forecast section on the homepage.
+
+```ron
+(
+    account: (
+        api_token: "<token_here>",
+    ),
+    forecast: (
+        // Hourly|Daily : Notify for reviews hourly or daily (every 24 hours).
+        interval: Hourly,
+        // false|true : whether to notify for grammar
+        grammar: false,
+        // false|true : whether to notify for vocab
+        vocab: false,
+        // TotalReviews|NewOnly : Show total review count or new only count
+        count: TotalReviews,
+        // false|true : notify about cards currently available on startup
+        initial_notify: true
+    ),
+)
+
+```
