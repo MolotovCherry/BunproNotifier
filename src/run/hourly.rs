@@ -24,25 +24,23 @@ impl Hourly {
         let (abortable, abort_token) = AbortableSleep::new();
 
         thread::spawn(move || {
-            let n = Now::new();
+            let mut now = Now::new();
 
-            let mut data = combine_records(data, total_due, &config, n);
+            let mut data = combine_records(data, total_due, &config, now);
 
             // do initial notify, and remove current hour from data
             if initial_notify
-                && let Some(data) = data.remove(&n.hour)
+                && let Some(data) = data.remove(&now.hour)
                 && ((data.grammar > 0 && config.forecast.grammar)
                     || (data.vocab > 0 && config.forecast.vocab))
             {
                 notify(&data, &mut notification, &config);
             }
 
-            while let WakeReason::Timeout = sleep_until_next_hour(&abortable, n) {
-                let Now { hour, .. } = Now::new();
-
+            while let WakeReason::Timeout = sleep_until_next_hour(&abortable, now) {
                 // there should always be a next hour. If there isn't, we've hit the end of our available data
                 // and need to repoll
-                let Some(count) = data.remove(&hour) else {
+                let Some(count) = data.remove(&now.hour) else {
                     trace!("hit next hour, but there was no data left; repolling");
 
                     // artificially cause repoll
@@ -55,6 +53,8 @@ impl Hourly {
                 {
                     notify(&count, &mut notification, &config);
                 }
+
+                now = Now::new();
             }
 
             trace!("aborting run");
