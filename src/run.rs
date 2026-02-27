@@ -55,7 +55,7 @@ pub fn run(config: Config) {
                 trace!("failed to get forecast data: {e}");
                 _ = n
                     .summary("Error")
-                    .body(&format!("Failed to get forecast:\n{e}"))
+                    .body(&format!("Failed to get forecast: {e}"))
                     .show();
 
                 None
@@ -69,7 +69,7 @@ pub fn run(config: Config) {
                     trace!("failed to get total due data: {e}");
                     _ = n
                         .summary("Error")
-                        .body(&format!("Failed to get total due:\n{e}"))
+                        .body(&format!("Failed to get total due: {e}"))
                         .show();
 
                     None
@@ -79,8 +79,8 @@ pub fn run(config: Config) {
             None
         };
 
-        match get_forecast(&config) {
-            Ok(Forecast::Daily(daily)) => {
+        match forecast {
+            Some(Forecast::Daily(daily)) => {
                 let token = Daily::run(
                     daily,
                     config.clone(),
@@ -91,7 +91,7 @@ pub fn run(config: Config) {
                 run_abort_token = Some(token);
             }
 
-            Ok(Forecast::Hourly(hourly)) => {
+            Some(Forecast::Hourly(hourly)) => {
                 let token = Hourly::run(
                     hourly,
                     total_due,
@@ -103,13 +103,7 @@ pub fn run(config: Config) {
                 run_abort_token = Some(token);
             }
 
-            Err(e) => {
-                trace!("failed to get forecast data: {e}");
-                _ = n
-                    .summary("Error")
-                    .body(&format!("Failed to get forecast:\n{e}"))
-                    .show();
-            }
+            None => (),
         }
 
         trace!("sleeping until next poll");
