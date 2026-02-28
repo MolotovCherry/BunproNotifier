@@ -94,8 +94,8 @@ fn notify(count: &Count, notification: &mut Notification, config: &Config) {
     _ = notification.summary("Reviews Due").body(&body).show();
 }
 
-/// Sleep until the next hour
-/// Returns the next hour and the wake reason
+/// Sleep until the next day at hour in config (if out of range, defaults to 6am)
+/// Returns the wake reason
 fn sleep_until(config: &Config, abortable: &AbortableSleep, now: &DateTime) -> WakeReason {
     let hour = match config.forecast.daily_time {
         t @ 0..24 => t,

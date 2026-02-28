@@ -92,7 +92,7 @@ fn notify(count: &Count, notification: &mut Notification, config: &Config) {
 }
 
 /// Sleep until the next hour
-/// Returns the next hour and the wake reason
+/// Returns the wake reason
 fn sleep_until_next_hour(abortable: &AbortableSleep, time: Time) -> WakeReason {
     let now = Span::new()
         .minutes(time.minute())
