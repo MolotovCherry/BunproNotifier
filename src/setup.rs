@@ -1,7 +1,7 @@
 use std::{
     fs,
     io::ErrorKind,
-    iter,
+    iter, panic,
     path::{Path, PathBuf},
 };
 
@@ -13,6 +13,8 @@ use snafu::{OptionExt, ResultExt, Whatever};
 use crate::{APP_ID, ASSETS, popup::epopup};
 
 pub fn setup() -> Result<(), Whatever> {
+    set_hook();
+
     let env = Env::new().filter("BP_LOG").write_style("BP_STYLE");
 
     env_logger::builder()
@@ -130,4 +132,12 @@ fn windows(tempdir: &Path) -> Result<(), Whatever> {
     }
 
     Ok(())
+}
+
+fn set_hook() {
+    panic::set_hook(Box::new(|info| {
+        epopup!(info);
+
+        eprintln!("{info}");
+    }));
 }

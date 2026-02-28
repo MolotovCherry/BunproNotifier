@@ -5,8 +5,6 @@ use std::{sync::Arc, time::Duration};
 
 use log::trace;
 use notify_rust::Notification;
-#[allow(unused)]
-use sayuri::macros::tri;
 
 #[cfg(windows)]
 use crate::APP_ID;
@@ -62,7 +60,7 @@ pub fn run(config: Config) {
             }
         };
 
-        let total_due = if matches!(config.forecast.count, ForecastCount::TotalReviews) {
+        let total_due = if config.forecast.count == ForecastCount::TotalReviews {
             match get_due(&config) {
                 Ok(v) => Some(v),
                 Err(e) => {
@@ -83,6 +81,7 @@ pub fn run(config: Config) {
             Some(Forecast::Daily(daily)) => {
                 let token = Daily::run(
                     daily,
+                    total_due,
                     config.clone(),
                     initial_notify,
                     abort_token.clone(),

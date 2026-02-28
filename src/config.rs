@@ -20,18 +20,33 @@ pub struct Account {
     pub api_token: String,
 }
 
-#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Forecast {
     /// Whether to get notified hourly or daily
     pub interval: ForecastInterval,
     /// Display total reviews or only new reviews
     pub count: ForecastCount,
+    /// 24 hour to send notification for Daily interval
+    pub daily_time: i8,
     /// Notify for new grammar reviews
     pub grammar: bool,
     /// Notify for new vocab reviews
     pub vocab: bool,
     /// Notify about what reviews are available on initial startup
     pub initial_notify: bool,
+}
+
+impl Default for Forecast {
+    fn default() -> Self {
+        Self {
+            interval: Default::default(),
+            count: Default::default(),
+            daily_time: 6,
+            grammar: true,
+            vocab: true,
+            initial_notify: true,
+        }
+    }
 }
 
 #[derive(Debug, Default, Deserialize, Serialize, PartialEq)]

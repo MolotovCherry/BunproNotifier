@@ -18,12 +18,15 @@ Note with regards to the api token, this is _not_ the api token found in your se
         interval: Hourly,
         // TotalReviews|NewOnly : Show total review count or new only count
         count: NewOnly,
+        // hour in 24 hour format at which to send notifications for Daily interval
+        // defaults to 6 if invalid
+        daily_time: 6,
         // false|true : whether to notify for grammar
-        grammar: false,
+        grammar: true,
         // false|true : whether to notify for vocab
-        vocab: false,
+        vocab: true,
         // false|true : notify about cards currently available on startup
-        initial_notify: false
+        initial_notify: true
     ),
 )
 

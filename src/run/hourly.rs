@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc, thread, time::Duration};
 
-use jiff::Zoned;
+use jiff::{Zoned, civil::Time};
 use log::trace;
 use notify_rust::Notification;
 
@@ -24,21 +24,21 @@ impl Hourly {
         let (abortable, abort_token) = AbortableSleep::new();
 
         thread::spawn(move || {
-            let mut now = Now::new();
+            let mut now = Zoned::now().time();
 
             let mut data = combine_records(data, total_due, &config, now);
 
             // do initial notify, and remove current hour from data
-            if initial_notify && let Some(data) = data.remove(&now.hour) {
+            if initial_notify && let Some(data) = data.remove(&now.hour()) {
                 notify(&data, &mut notification, &config);
             }
 
             while let WakeReason::Timeout = sleep_until_next_hour(&abortable, now) {
-                now = Now::new();
+                now = Zoned::now().time();
 
                 // there should always be a next hour. If there isn't, we've hit the end of our available data
                 // and need to repoll
-                let Some(count) = data.remove(&now.hour) else {
+                let Some(count) = data.remove(&now.hour()) else {
                     trace!("hit next hour, but there was no data left; repolling");
 
                     // artificially cause repoll
@@ -93,54 +93,19 @@ fn notify(count: &Count, notification: &mut Notification, config: &Config) {
 
 /// Sleep until the next hour
 /// Returns the next hour and the wake reason
-fn sleep_until_next_hour(abortable: &AbortableSleep, now: Now) -> WakeReason {
-    let Now { minute, second, .. } = now;
+fn sleep_until_next_hour(abortable: &AbortableSleep, now: Time) -> WakeReason {
+    let Ok(next) = Time::new(now.hour() + 1, 0, 0, 0) else {
+        return WakeReason::Aborted;
+    };
 
-    // the time in seconds in the current hour
-    let now_secs = minute as u64 * 60 + second as u64;
-    // how long in seconds is left until the next hour tick
-    let wait_for = (60u64 * 60).saturating_sub(now_secs);
+    let next_tick = now.duration_until(next);
 
-    trace!("sleeping for {wait_for} seconds til next hour");
+    trace!("sleeping for {} seconds til next hour", next_tick.as_secs());
 
-    abortable.sleep(Duration::from_secs(wait_for))
+    abortable.sleep(Duration::from_secs(next_tick.as_secs() as _))
 }
 
 type Hour = i8;
-type Minute = i8;
-type Second = i8;
-
-#[derive(Copy, Clone)]
-struct Now {
-    hour: Hour,
-    minute: Minute,
-    second: Second,
-}
-
-impl Now {
-    fn new() -> Self {
-        let now = Zoned::now();
-
-        trace!(
-            "now() got {hour}:{minute}:{second}",
-            hour = now.hour(),
-            minute = now.minute(),
-            second = now.second()
-        );
-
-        Now {
-            hour: now.hour(),
-            minute: now.minute(),
-            second: now.second(),
-        }
-    }
-}
-
-impl Default for Now {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 #[derive(Default, Debug)]
 struct Count {
@@ -152,24 +117,22 @@ fn combine_records(
     data: ForecastHourly,
     total_due: Option<TotalDue>,
     config: &Config,
-    now: Now,
+    now: Time,
 ) -> HashMap<Hour, Count> {
-    let mut records = HashMap::new();
+    let mut records: HashMap<_, Count> = HashMap::new();
 
     for (zone, count) in data.grammar.rest {
         let hour = zone.0.hour();
-        let record: &mut Count = records.entry(hour).or_default();
-        record.grammar = count;
+        records.entry(hour).or_default().grammar = count;
     }
 
     for (zone, count) in data.vocab.rest {
         let hour = zone.0.hour();
-        let record = records.entry(hour).or_default();
-        record.vocab = count;
+        records.entry(hour).or_default().vocab = count;
     }
 
     // hour wraparound iterator; stops iteration at now.hour - 1
-    let hours = (0..24).map(|x| (x + now.hour) % 24);
+    let hours = (0..24).map(|x| (x + now.hour()) % 24);
 
     let mut total_reviews_grammar = total_due.map(|t| t.total_due_grammar).unwrap_or(0);
     let mut total_reviews_vocab = total_due.map(|t| t.total_due_vocab).unwrap_or(0);
@@ -178,7 +141,7 @@ fn combine_records(
     for h in hours {
         let entry = records.entry(h).or_default();
 
-        if matches!(config.forecast.count, ForecastCount::TotalReviews) {
+        if config.forecast.count == ForecastCount::TotalReviews {
             total_reviews_grammar += entry.grammar;
             entry.grammar = total_reviews_grammar;
             total_reviews_vocab += entry.vocab;

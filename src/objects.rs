@@ -1,9 +1,7 @@
-use std::{collections::HashMap, sync::LazyLock};
+use std::collections::HashMap;
 
 use jiff::{Timestamp, civil::Date, tz::TimeZone};
 use serde::{Deserialize, Deserializer};
-
-static CURRENT_TZ: LazyLock<TimeZone> = LazyLock::new(TimeZone::system);
 
 pub type CardCount = u32;
 
@@ -13,7 +11,6 @@ pub struct TotalDue {
     pub total_due_vocab: CardCount,
 }
 
-#[expect(unused)]
 #[derive(Debug, Deserialize)]
 pub struct ForecastDaily {
     pub grammar: ForecastDailyObject,
@@ -32,7 +29,6 @@ pub struct ForecastHourlyObject {
     pub rest: HashMap<Zoned, CardCount>,
 }
 
-#[expect(unused)]
 #[derive(Debug, Deserialize)]
 pub struct ForecastDailyObject {
     pub later: CardCount,
@@ -49,6 +45,9 @@ fn timestamp_to_zoned<'de, D>(de: D) -> Result<jiff::Zoned, D::Error>
 where
     D: Deserializer<'de>,
 {
+    use std::sync::LazyLock;
+    static CURRENT_TZ: LazyLock<TimeZone> = LazyLock::new(TimeZone::system);
+
     let ts = Timestamp::deserialize(de)?.to_zoned(CURRENT_TZ.clone());
 
     Ok(ts)
