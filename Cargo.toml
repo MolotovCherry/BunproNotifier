@@ -34,3 +34,6 @@ features = [
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1.12"
+
+[build-dependencies]
+image = "0.25.9"

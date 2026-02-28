@@ -5,11 +5,13 @@ use tray_icon::{
 
 use crate::event_loop::EventLoop;
 
+static ICON: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/tray.bin"));
+
 pub struct AppTray;
 
 impl AppTray {
     pub fn run() {
-        let icon = Icon::from_resource(1, None).unwrap();
+        let icon = Icon::from_rgba(ICON.to_owned(), 256, 256).expect("rgba creation to succeed");
 
         let tray_menu = Menu::new();
 
@@ -52,7 +54,7 @@ impl AppTray {
         );
 
         #[cfg(windows)]
-        EventLoop::new().run(move |event_loop, _| {
+        EventLoop::new().run(move |event_loop| {
             if let Ok(event) = MenuEvent::receiver().try_recv()
                 && event.id == quit_i.id()
             {

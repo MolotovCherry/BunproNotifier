@@ -14,7 +14,7 @@ impl EventLoop {
     }
 
     #[cfg(windows)]
-    pub fn run(&self, mut cb: impl FnMut(&Self, &MSG)) {
+    pub fn run(&self, mut cb: impl FnMut(&Self)) {
         let mut msg = MSG::default();
 
         fn get_msg(msg: &mut MSG) -> bool {
@@ -28,7 +28,7 @@ impl EventLoop {
                 DispatchMessageW(&msg);
             }
 
-            cb(self, &msg);
+            cb(self);
         }
     }
 

@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{env, error::Error, fs, path::Path};
 
 fn main() -> Result<(), Box<dyn Error>> {
     #[cfg(windows)]
@@ -10,6 +10,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             .set_manifest(MANIFEST)
             .compile()?;
     }
+
+    let i = image::open("_assets/logo-original.png").unwrap();
+    let raw_data = i.into_rgba8().into_vec();
+
+    let var = env::var("OUT_DIR").unwrap();
+    let path = Path::new(&var).join("tray.bin");
+    fs::write(path, raw_data).expect("tray.bin write to succeed");
+
+    println!("cargo::rerun-if-changed=_assets/logo-original.png");
 
     Ok(())
 }
