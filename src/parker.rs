@@ -35,7 +35,7 @@ impl AbortToken {
     pub fn abort(&self) {
         // errors if receiver half was dropped; if it was dropped, then
         // whoever it is is no longer using this type
-        if self.1.send(WakeReason::Aborted).is_ok() {
+        if self.1.try_send(WakeReason::Aborted).is_ok() {
             self.0.unpark();
         }
     }
