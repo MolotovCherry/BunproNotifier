@@ -35,21 +35,14 @@ impl From<ForecastDaily> for Forecast {
 }
 
 pub fn get_forecast(config: &Config) -> Result<Forecast, Whatever> {
-    let uri = match config.forecast.interval {
-        ForecastInterval::Hourly => FORECAST_HOURLY,
-        ForecastInterval::Daily => FORECAST_DAILY,
-    };
-
-    let mut response = get_query(uri, config)?;
-
     let fc = match config.forecast.interval {
-        ForecastInterval::Hourly => response
+        ForecastInterval::Hourly => get_query(FORECAST_HOURLY, config)?
             .body_mut()
             .read_json::<ForecastHourly>()
             .whatever_context("forecast hourly json parse failed")?
             .into(),
 
-        ForecastInterval::Daily => response
+        ForecastInterval::Daily { .. } => get_query(FORECAST_DAILY, config)?
             .body_mut()
             .read_json::<ForecastDaily>()
             .whatever_context("forecast daily json parse failed")?

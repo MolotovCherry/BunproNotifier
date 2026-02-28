@@ -8,7 +8,7 @@ use log::trace;
 use notify_rust::Notification;
 
 use crate::{
-    config::{Config, ForecastCount},
+    config::{Config, ForecastCount, ForecastInterval},
     objects::{CardCount, ForecastDaily, TotalDue},
     parker::{AbortToken, AbortableSleep, WakeReason},
 };
@@ -97,8 +97,8 @@ fn notify(count: &Count, notification: &mut Notification, config: &Config) {
 /// Sleep until the next day at hour in config (if out of range, defaults to 6am)
 /// Returns the wake reason
 fn sleep_until(config: &Config, abortable: &AbortableSleep, now: &DateTime) -> WakeReason {
-    let hour = match config.forecast.daily_time {
-        t @ 0..24 => t,
+    let hour = match config.forecast.interval {
+        ForecastInterval::Daily { hour } if (0..24).contains(&hour) => hour,
         _ => 6,
     };
 

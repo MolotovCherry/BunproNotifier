@@ -18,21 +18,23 @@ Note with regards to the api token, this is _not_ the api token found in your se
         api_token: "<token_here>",
     ),
     forecast: (
-        // Hourly|Daily : Notify for reviews hourly or daily (every 24 hours)
-        interval: Hourly,
-        // TotalReviews|NewOnly : Show total review count or new only count
-        count: NewOnly,
-        // 0-23 : What hour to send notification for Daily interval
-        // defaults to 6 if invalid
-        daily_time: 6,
         // 1-65536 : How many hours between each poll
         // (grabs updated information from bunpro api; you'll want this at quicker rates if
         // actively doing reviews, so the program's cached info doesn't get stale)
         poll_rate: 1,
+
+        // Hourly|Daily(hour: 0-23): Notify for reviews hourly or daily
+        interval: Hourly, // or Daily( hour: 6 )
+
+        // TotalReviews|NewOnly : Show total review count or new only count
+        count: NewOnly,
+
         // false|true : Notify for new grammar reviews
         grammar: true,
+
         // false|true : Notify for new vocab reviews
         vocab: true,
+
         // false|true : Notify what reviews are available on startup
         initial_notify: true
     ),
