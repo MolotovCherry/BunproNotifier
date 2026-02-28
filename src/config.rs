@@ -20,28 +20,28 @@ pub struct Account {
     pub api_token: String,
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
 pub struct Forecast {
     /// Whether to get notified hourly or daily
     pub interval: ForecastInterval,
+    /// Display total reviews or only new reviews
+    pub count: ForecastCount,
     /// Notify for new grammar reviews
     pub grammar: bool,
     /// Notify for new vocab reviews
     pub vocab: bool,
-    /// Display total reviews or only new reviews
-    pub count: ForecastCount,
     /// Notify about what reviews are available on initial startup
     pub initial_notify: bool,
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
 pub enum ForecastInterval {
     #[default]
     Hourly,
     Daily,
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
 pub enum ForecastCount {
     TotalReviews,
     #[default]
