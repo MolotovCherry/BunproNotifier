@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc, thread, time::Duration};
 
 use jiff::{
     Zoned,
-    civil::{Date, DateTime, time},
+    civil::{Date, DateTime},
 };
 use log::trace;
 use notify_rust::Notification;
@@ -101,11 +101,10 @@ fn sleep_until(config: &Config, abortable: &AbortableSleep, now: &DateTime) -> W
         t @ 0..24 => t,
         _ => 6,
     };
-    let time = time(hour, 0, 0, 0);
-    let date = now.date().tomorrow().expect("not 9999");
-    let dt = DateTime::from_parts(date, time);
 
-    let next = now.duration_until(dt);
+    let date = now.date().tomorrow().expect("not 9999").at(hour, 0, 0, 0);
+
+    let next = now.duration_until(date);
 
     trace!("sleeping for {} seconds til next day", next.as_secs());
 

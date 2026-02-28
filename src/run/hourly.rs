@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc, thread, time::Duration};
 
-use jiff::{Zoned, civil::Time};
+use jiff::{Span, ToSpan, Unit, Zoned, civil::Time};
 use log::trace;
 use notify_rust::Notification;
 
@@ -93,16 +93,20 @@ fn notify(count: &Count, notification: &mut Notification, config: &Config) {
 
 /// Sleep until the next hour
 /// Returns the next hour and the wake reason
-fn sleep_until_next_hour(abortable: &AbortableSleep, now: Time) -> WakeReason {
-    let Ok(next) = Time::new(now.hour() + 1, 0, 0, 0) else {
-        return WakeReason::Aborted;
-    };
+fn sleep_until_next_hour(abortable: &AbortableSleep, time: Time) -> WakeReason {
+    let now = Span::new()
+        .minutes(time.minute())
+        .seconds(time.second())
+        .milliseconds(time.millisecond())
+        .microseconds(time.microsecond())
+        .nanoseconds(time.nanosecond());
 
-    let next_tick = now.duration_until(next);
+    let remainder = 1.hour().checked_sub(now).expect("now cannot be > 1 hour");
+    let total = remainder.total(Unit::Second).expect("total to succeed") as u64;
 
-    trace!("sleeping for {} seconds til next hour", next_tick.as_secs());
+    trace!("sleeping for {total} seconds til next hour");
 
-    abortable.sleep(Duration::from_secs(next_tick.as_secs() as _))
+    abortable.sleep(Duration::from_secs(total))
 }
 
 type Hour = i8;
