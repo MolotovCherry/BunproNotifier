@@ -65,6 +65,12 @@ impl Hourly {
 }
 
 fn notify(count: &Count, notification: &mut Notification, config: &Config) {
+    let needs_grammar = config.forecast.grammar && count.grammar > 0;
+    let needs_vocab = config.forecast.vocab && count.vocab > 0;
+    if !needs_grammar && !needs_vocab {
+        return;
+    }
+
     let body = {
         let reviews_text = match config.forecast.count {
             ForecastCount::TotalReviews => "total reviews",
@@ -73,14 +79,14 @@ fn notify(count: &Count, notification: &mut Notification, config: &Config) {
 
         let mut body = String::new();
 
-        if config.forecast.grammar {
+        if config.forecast.grammar && count.grammar > 0 {
             body.push_str(&format!(
                 "Grammar: {count} {reviews_text}",
                 count = count.grammar
             ));
         }
 
-        if config.forecast.vocab {
+        if config.forecast.vocab && count.vocab > 0 {
             body.push_str(&format!(
                 "\nVocab: {count} {reviews_text}",
                 count = count.vocab
