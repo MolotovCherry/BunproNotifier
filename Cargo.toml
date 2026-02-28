@@ -7,7 +7,6 @@ license = "MIT"
 homepage = "https://github.com/MolotovCherry/BunproNotifier"
 
 [dependencies]
-notify-rust = "4.12.0"
 serde = { version = "1.0.228", features = ["derive"] }
 snafu = "0.8.9"
 const_format = "0.2.35"
@@ -22,9 +21,14 @@ log = "0.4.29"
 env_logger = "0.11.9"
 tray-icon = "0.21.3"
 winit = "0.30.12"
+open = "5.3.3"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55.0"
+tauri-winrt-notification = "0.7.2"
+
+[target.'cfg(not(windows))'.dependencies]
+notify-rust = "4.12.0"
 
 [target.'cfg(windows)'.dependencies.windows]
 version = "0.62.2"

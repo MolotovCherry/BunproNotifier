@@ -1,31 +1,29 @@
 mod daily;
 mod hourly;
 
-use std::{sync::Arc, time::Duration};
+use std::{
+    sync::{Arc, OnceLock},
+    time::Duration,
+};
 
 use log::trace;
-use notify_rust::Notification;
 
-#[cfg(windows)]
-use crate::APP_ID;
 use crate::{
     config::{Config, ForecastCount},
+    notification::Notification,
     parker::{AbortToken, AbortableSleep},
     req::{Forecast, get_due, get_forecast},
 };
 use daily::Daily;
 use hourly::Hourly;
 
-pub fn run(config: Config) {
-    let mut n = Notification::new();
-    n.appname("Bunpro");
+pub static ABORT_TOKEN: OnceLock<AbortToken> = OnceLock::new();
 
-    #[cfg(windows)]
-    n.app_id(APP_ID);
+pub fn run(config: Config) {
+    let mut n = Notification::new("Bunpro");
 
     if !config.forecast.grammar && !config.forecast.vocab {
-        #[rustfmt::skip]
-        let _ = n
+        n
             .summary("Error")
             .body("Both forecast.grammar and forecast.vocab cannot be false. Please set one or both to true")
             .show();
@@ -38,6 +36,8 @@ pub fn run(config: Config) {
     let mut run_abort_token = None::<AbortToken>;
     let mut initial_notify = config.forecast.initial_notify;
     let (abortable, abort_token) = AbortableSleep::new();
+
+    ABORT_TOKEN.set(abort_token.clone()).unwrap();
 
     loop {
         // abort current running thread
@@ -52,8 +52,7 @@ pub fn run(config: Config) {
             Ok(v) => Some(v),
             Err(e) => {
                 trace!("failed to get forecast data: {e}");
-                _ = n
-                    .summary("Error")
+                n.summary("Error")
                     .body(&format!("Failed to get forecast: {e}"))
                     .show();
 
@@ -68,8 +67,7 @@ pub fn run(config: Config) {
                 Ok(v) => Some(v),
                 Err(e) => {
                     trace!("failed to get total due data: {e}");
-                    _ = n
-                        .summary("Error")
+                    n.summary("Error")
                         .body(&format!("Failed to get total due: {e}"))
                         .show();
 

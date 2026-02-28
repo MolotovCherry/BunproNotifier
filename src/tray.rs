@@ -9,6 +9,8 @@ use winit::{
     window::WindowId,
 };
 
+use crate::run::ABORT_TOKEN;
+
 static ICON: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/tray.bin"));
 
 pub struct AppTray;
@@ -20,6 +22,7 @@ impl AppTray {
         let tray_menu = Menu::new();
 
         let quit = MenuItem::new("Quit", true, None);
+        let refresh = MenuItem::new("Refresh Data", true, None);
 
         let authors = env!("CARGO_PKG_AUTHORS")
             .split(':')
@@ -30,6 +33,7 @@ impl AppTray {
 
         tray_menu
                 .append_items(&[
+                    &refresh,
                     &PredefinedMenuItem::about(
                         None,
                         Some(AboutMetadata {
@@ -68,7 +72,7 @@ impl AppTray {
             _ = proxy.send_event(UserEvent::MenuEvent(event));
         }));
 
-        let mut app = TrayHandler { quit };
+        let mut app = TrayHandler { quit, refresh };
         event_loop.run_app(&mut app).unwrap();
     }
 }
@@ -81,6 +85,7 @@ enum UserEvent {
 
 struct TrayHandler {
     quit: MenuItem,
+    refresh: MenuItem,
 }
 
 impl ApplicationHandler<UserEvent> for TrayHandler {
@@ -94,6 +99,12 @@ impl ApplicationHandler<UserEvent> for TrayHandler {
             UserEvent::MenuEvent(menu_event) => {
                 if menu_event.id == self.quit.id() {
                     event_loop.exit();
+                }
+
+                if menu_event.id == self.refresh.id()
+                    && let Some(token) = ABORT_TOKEN.get()
+                {
+                    token.abort();
                 }
             }
         }

@@ -28,7 +28,7 @@ impl AbortableSleep {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AbortToken(Unparker, SyncSender<WakeReason>);
 
 impl AbortToken {

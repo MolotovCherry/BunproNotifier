@@ -5,10 +5,10 @@ use jiff::{
     civil::{Date, DateTime},
 };
 use log::trace;
-use notify_rust::Notification;
 
 use crate::{
     config::{Config, ForecastCount, ForecastInterval},
+    notification::Notification,
     objects::{CardCount, ForecastDaily, TotalDue},
     parker::{AbortToken, AbortableSleep, WakeReason},
 };
@@ -67,31 +67,40 @@ fn notify(count: &Count, notification: &mut Notification, config: &Config) {
     }
 
     let body = {
-        let reviews_text = match config.forecast.count {
-            ForecastCount::TotalReviews => "total reviews",
-            ForecastCount::NewOnly => "new reviews",
-        };
-
         let mut body = String::new();
 
         if config.forecast.grammar && count.grammar > 0 {
-            body.push_str(&format!(
-                "Grammar: {count} {reviews_text}",
-                count = count.grammar
-            ));
+            body.push_str(&format!("Grammar: {count}", count = count.grammar));
         }
 
         if config.forecast.vocab && count.vocab > 0 {
-            body.push_str(&format!(
-                "\nVocab: {count} {reviews_text}",
-                count = count.vocab
-            ));
+            body.push_str(&format!("\nVocab: {count}", count = count.vocab));
         }
 
         body
     };
 
-    _ = notification.summary("Reviews Due").body(&body).show();
+    let title = match (&config.forecast.count, &config.forecast.interval) {
+        (ForecastCount::TotalReviews, ForecastInterval::Daily { .. }) => "Total Daily Reviews Due",
+        (ForecastCount::TotalReviews, ForecastInterval::Hourly) => "Total Hourly Reviews Due",
+        (ForecastCount::NewOnly, ForecastInterval::Daily { .. }) => "New Daily Reviews Due",
+        (ForecastCount::NewOnly, ForecastInterval::Hourly) => "New Hourly Reviews Due",
+    };
+
+    notification
+        .summary(title)
+        .body(&body)
+        .add_button("Dashboard", "dashboard")
+        .on_activated(|action| {
+            if let Some(action) = action
+                && action == "dashboard"
+            {
+                _ = open::that("https://bunpro.jp/dashboard");
+            }
+
+            Ok(())
+        })
+        .show();
 }
 
 /// Sleep until the next day at hour in config (if out of range, defaults to 6am)
