@@ -34,6 +34,7 @@ pub fn run(config: Config) {
     }
 
     let config = Arc::new(config);
+    let poll_rate = config.forecast.poll_rate.clamp(1, u16::MAX) as u64;
     let mut run_abort_token = None::<AbortToken>;
     let mut initial_notify = config.forecast.initial_notify;
     let (abortable, abort_token) = AbortableSleep::new();
@@ -61,6 +62,8 @@ pub fn run(config: Config) {
         };
 
         let total_due = if config.forecast.count == ForecastCount::TotalReviews {
+            trace!("run get_due()");
+
             match get_due(&config) {
                 Ok(v) => Some(v),
                 Err(e) => {
@@ -105,11 +108,12 @@ pub fn run(config: Config) {
             None => (),
         }
 
-        trace!("sleeping until next poll");
+        trace!("sleeping {poll_rate} hours until next poll");
 
         initial_notify = false;
+
         // keep scanning for set amount of time, unless
         // runnable aborts this to request fresh data (for example, if it ran out)
-        abortable.sleep(Duration::from_hours(1));
+        abortable.sleep(Duration::from_hours(poll_rate));
     }
 }

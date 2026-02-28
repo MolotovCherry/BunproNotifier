@@ -22,17 +22,20 @@ pub struct Account {
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Forecast {
-    /// Whether to get notified hourly or daily
+    /// Notify for reviews hourly or daily (every 24 hours)
     pub interval: ForecastInterval,
-    /// Display total reviews or only new reviews
+    /// Show total review count or new only count
     pub count: ForecastCount,
-    /// 24 hour to send notification for Daily interval
+    /// 0-23 : 24 hour to send notification for Daily interval
+    /// defaults to 6 if invalid
     pub daily_time: i8,
+    /// 1-65536 : How many hours between each poll (updating information from online)
+    pub poll_rate: u16,
     /// Notify for new grammar reviews
     pub grammar: bool,
     /// Notify for new vocab reviews
     pub vocab: bool,
-    /// Notify about what reviews are available on initial startup
+    /// Notify what reviews are available on startup
     pub initial_notify: bool,
 }
 
@@ -42,6 +45,7 @@ impl Default for Forecast {
             interval: Default::default(),
             count: Default::default(),
             daily_time: 6,
+            poll_rate: 1,
             grammar: true,
             vocab: true,
             initial_notify: true,

@@ -14,20 +14,21 @@ Note with regards to the api token, this is _not_ the api token found in your se
         api_token: "<token_here>",
     ),
     forecast: (
-        // Hourly|Daily : Notify for reviews hourly or daily (every 24 hours).
+        // Hourly|Daily : Notify for reviews hourly or daily (every 24 hours)
         interval: Hourly,
         // TotalReviews|NewOnly : Show total review count or new only count
         count: NewOnly,
-        // hour in 24 hour format at which to send notifications for Daily interval
+        // 0-23 : 24 hour to send notification for Daily interval
         // defaults to 6 if invalid
         daily_time: 6,
-        // false|true : whether to notify for grammar
+        // 1-65536 : How many hours between each poll (updating information from online)
+        poll_rate: 1,
+        // false|true : Notify for new grammar reviews
         grammar: true,
-        // false|true : whether to notify for vocab
+        // false|true : Notify for new vocab reviews
         vocab: true,
-        // false|true : notify about cards currently available on startup
+        // false|true : Notify what reviews are available on startup
         initial_notify: true
     ),
 )
-
 ```
