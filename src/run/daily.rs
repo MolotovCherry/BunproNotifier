@@ -69,11 +69,11 @@ fn notify(count: &Count, notification: &mut Notification, config: &Config) {
     let body = {
         let mut body = String::new();
 
-        if config.forecast.grammar && count.grammar > 0 {
+        if has_grammar {
             body.push_str(&format!("Grammar: {count}", count = count.grammar));
         }
 
-        if config.forecast.vocab && count.vocab > 0 {
+        if has_vocab {
             body.push_str(&format!("\nVocab: {count}", count = count.vocab));
         }
 
@@ -87,15 +87,28 @@ fn notify(count: &Count, notification: &mut Notification, config: &Config) {
         (ForecastCount::NewOnly, ForecastInterval::Hourly) => "New Hourly Reviews Due",
     };
 
+    notification.summary(title).body(&body);
+
+    if has_grammar {
+        notification.add_button("Grammar", "review_grammar");
+    }
+
+    if has_vocab {
+        notification.add_button("Vocab", "review_vocab");
+    }
+
     notification
-        .summary(title)
-        .body(&body)
         .add_button("Dashboard", "dashboard")
         .on_activated(|action| {
-            if let Some(action) = action
-                && action == "dashboard"
-            {
-                _ = open::that("https://bunpro.jp/dashboard");
+            if let Some(action) = action {
+                match &*action {
+                    "dashboard" => _ = open::that("https://bunpro.jp/dashboard"),
+                    "review_grammar" => {
+                        _ = open::that("https://bunpro.jp/reviews?only_review=grammar")
+                    }
+                    "review_vocab" => _ = open::that("https://bunpro.jp/reviews?only_review=vocab"),
+                    _ => (),
+                }
             }
 
             Ok(())
