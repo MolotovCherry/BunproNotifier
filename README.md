@@ -22,10 +22,12 @@ Note with regards to the api token, this is _not_ the api token found in your se
         interval: Hourly,
         // TotalReviews|NewOnly : Show total review count or new only count
         count: NewOnly,
-        // 0-23 : 24 hour to send notification for Daily interval
+        // 0-23 : What hour to send notification for Daily interval
         // defaults to 6 if invalid
         daily_time: 6,
-        // 1-65536 : How many hours between each poll (updating information from online)
+        // 1-65536 : How many hours between each poll
+        // (grabs updated information from bunpro api; you'll want this at quicker rates if
+        // actively doing reviews, so the program's cached info doesn't get stale)
         poll_rate: 1,
         // false|true : Notify for new grammar reviews
         grammar: true,

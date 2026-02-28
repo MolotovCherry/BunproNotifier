@@ -26,10 +26,12 @@ pub struct Forecast {
     pub interval: ForecastInterval,
     /// Show total review count or new only count
     pub count: ForecastCount,
-    /// 0-23 : 24 hour to send notification for Daily interval
+    /// 0-23 : What hour to send notification for Daily interval
     /// defaults to 6 if invalid
     pub daily_time: i8,
-    /// 1-65536 : How many hours between each poll (updating information from online)
+    /// 1-65536 : How many hours between each poll
+    /// (grabs updated information from bunpro api; you'll want this at quicker rates if
+    /// actively doing reviews, so the program's cached info doesn't get stale)
     pub poll_rate: u16,
     /// Notify for new grammar reviews
     pub grammar: bool,
