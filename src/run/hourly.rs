@@ -34,6 +34,8 @@ impl Hourly {
             }
 
             while let WakeReason::Timeout = sleep_until_next_hour(&abortable, now) {
+                now = Now::new();
+
                 // there should always be a next hour. If there isn't, we've hit the end of our available data
                 // and need to repoll
                 let Some(count) = data.remove(&now.hour) else {
@@ -45,8 +47,6 @@ impl Hourly {
                 };
 
                 notify(&count, &mut notification, &config);
-
-                now = Now::new();
             }
 
             trace!("aborting run");
