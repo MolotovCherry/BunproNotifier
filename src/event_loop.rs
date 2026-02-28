@@ -1,6 +1,10 @@
+#[cfg(windows)]
 use windows::Win32::UI::WindowsAndMessaging::{
     DispatchMessageW, GetMessageW, MSG, PostQuitMessage, TranslateMessage,
 };
+
+#[cfg(not(windows))]
+compile_error!("TODO: Support other langs with EventLoop for tray icon");
 
 pub struct EventLoop;
 
@@ -9,6 +13,7 @@ impl EventLoop {
         Self
     }
 
+    #[cfg(windows)]
     pub fn run(&self, mut cb: impl FnMut(&Self, &MSG)) {
         let mut msg = MSG::default();
 
@@ -27,7 +32,7 @@ impl EventLoop {
         }
     }
 
-    #[expect(unused)]
+    #[cfg(windows)]
     pub fn exit(&self) {
         unsafe {
             PostQuitMessage(0);

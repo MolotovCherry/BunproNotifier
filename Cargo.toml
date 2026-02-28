@@ -2,6 +2,9 @@
 name = "bunpro-notifier"
 version = "0.1.0"
 edition = "2024"
+authors = ["Cherry"]
+license = "MIT"
+homepage = "https://github.com/MolotovCherry/BunproNotifier"
 
 [dependencies]
 notify-rust = "4.12.0"
@@ -17,6 +20,7 @@ directories = "6.0.0"
 crossbeam = "0.8.4"
 log = "0.4.29"
 env_logger = "0.11.9"
+tray-icon = "0.21.3"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55.0"

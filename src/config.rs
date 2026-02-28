@@ -16,7 +16,7 @@ pub struct Config {
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Account {
-    /// TODO: Explain how to get it
+    /// bunpro api token
     pub api_token: String,
 }
 

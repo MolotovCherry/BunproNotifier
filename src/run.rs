@@ -18,7 +18,7 @@ use hourly::Hourly;
 
 pub fn run(config: Config) {
     let mut n = Notification::new();
-    n.appname("BunproNotifier");
+    n.appname("Bunpro");
 
     #[cfg(windows)]
     n.app_id(APP_ID);

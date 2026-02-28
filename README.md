@@ -1,6 +1,10 @@
-# BunproNotifier
+# Bunpro Notifier
 
 A simple app that sends you system notifications when it's time to do your reviews.
+
+## Closing app
+
+Find the bunpro icon in the systray, right click on it, and click "Quit".
 
 ## Configuration
 
@@ -32,3 +36,7 @@ Note with regards to the api token, this is _not_ the api token found in your se
     ),
 )
 ```
+
+# Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

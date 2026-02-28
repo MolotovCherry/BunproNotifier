@@ -3,7 +3,6 @@ use std::{
     io::ErrorKind,
     iter, panic,
     path::{Path, PathBuf},
-    thread,
 };
 
 use directories::ProjectDirs;
@@ -11,7 +10,7 @@ use env_logger::Env;
 use log::{LevelFilter, error};
 use snafu::{OptionExt, ResultExt, Whatever};
 
-use crate::{APP_ID, ASSETS, event_loop::EventLoop, popup::epopup};
+use crate::{APP_ID, ASSETS, popup::epopup};
 
 pub fn setup() -> Result<(), Whatever> {
     set_hook();
@@ -131,11 +130,6 @@ fn windows(tempdir: &Path) -> Result<(), Whatever> {
     if let Err(e) = res {
         return Err(e).whatever_context("Registry setup failed");
     }
-
-    // start up event loop to make startup look nice (no infinite load cursor)
-    thread::spawn(|| {
-        EventLoop::new().run(|_, _| ());
-    });
 
     Ok(())
 }

@@ -54,7 +54,7 @@ macro_rules! epopup {
         {
             use crate::popup::{MessageBoxIcon, popup};
             popup(
-                "BunproNotifier Error",
+                "Bunpro Notifier Error",
                 $error.to_string(),
                 MessageBoxIcon::Error,
             );
