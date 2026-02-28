@@ -29,11 +29,7 @@ impl Hourly {
             let mut data = combine_records(data, total_due, &config, now);
 
             // do initial notify, and remove current hour from data
-            if initial_notify
-                && let Some(data) = data.remove(&now.hour)
-                && ((data.grammar > 0 && config.forecast.grammar)
-                    || (data.vocab > 0 && config.forecast.vocab))
-            {
+            if initial_notify && let Some(data) = data.remove(&now.hour) {
                 notify(&data, &mut notification, &config);
             }
 
@@ -48,11 +44,7 @@ impl Hourly {
                     break;
                 };
 
-                if (count.grammar > 0 && config.forecast.grammar)
-                    || (count.vocab > 0 && config.forecast.vocab)
-                {
-                    notify(&count, &mut notification, &config);
-                }
+                notify(&count, &mut notification, &config);
 
                 now = Now::new();
             }
