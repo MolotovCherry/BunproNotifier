@@ -57,9 +57,9 @@ impl Hourly {
 }
 
 fn notify(count: &Count, notification: &mut Notification, config: &Config) {
-    let needs_grammar = config.forecast.grammar && count.grammar > 0;
-    let needs_vocab = config.forecast.vocab && count.vocab > 0;
-    if !needs_grammar && !needs_vocab {
+    let has_grammar = config.forecast.grammar && count.grammar > 0;
+    let has_vocab = config.forecast.vocab && count.vocab > 0;
+    if !has_grammar && !has_vocab {
         return;
     }
 
