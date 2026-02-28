@@ -1,9 +1,13 @@
 use tray_icon::{
-    Icon, TrayIconBuilder,
+    Icon, TrayIconBuilder, TrayIconEvent,
     menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
 };
-
-use crate::event_loop::EventLoop;
+use winit::{
+    application::ApplicationHandler,
+    event::WindowEvent,
+    event_loop::{ActiveEventLoop, ControlFlow, EventLoop},
+    window::WindowId,
+};
 
 static ICON: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/tray.bin"));
 
@@ -15,7 +19,7 @@ impl AppTray {
 
         let tray_menu = Menu::new();
 
-        let quit_i = MenuItem::new("Quit", true, None);
+        let quit = MenuItem::new("Quit", true, None);
 
         let authors = env!("CARGO_PKG_AUTHORS")
             .split(':')
@@ -40,28 +44,58 @@ impl AppTray {
                         }),
                     ),
                     &PredefinedMenuItem::separator(),
-                    &quit_i,
+                    &quit,
                 ])
                 .unwrap();
 
-        let mut tray_icon = Some(
-            TrayIconBuilder::new()
-                .with_tooltip(title)
-                .with_menu(Box::new(tray_menu))
-                .with_icon(icon)
-                .build()
-                .unwrap(),
-        );
+        let _tray_icon = TrayIconBuilder::new()
+            .with_tooltip(title)
+            .with_menu(Box::new(tray_menu))
+            .with_icon(icon)
+            .build()
+            .unwrap();
 
-        #[cfg(windows)]
-        EventLoop::new().run(move |event_loop| {
-            if let Ok(event) = MenuEvent::receiver().try_recv()
-                && event.id == quit_i.id()
-            {
-                event_loop.exit();
+        let event_loop = EventLoop::<UserEvent>::with_user_event().build().unwrap();
+        event_loop.set_control_flow(ControlFlow::Wait);
 
-                tray_icon.take();
+        let proxy = event_loop.create_proxy();
+        TrayIconEvent::set_event_handler(Some(move |event| {
+            _ = proxy.send_event(UserEvent::TrayIconEvent(event));
+        }));
+
+        let proxy = event_loop.create_proxy();
+        MenuEvent::set_event_handler(Some(move |event| {
+            _ = proxy.send_event(UserEvent::MenuEvent(event));
+        }));
+
+        let mut app = TrayHandler { quit };
+        event_loop.run_app(&mut app).unwrap();
+    }
+}
+
+#[expect(unused)]
+enum UserEvent {
+    TrayIconEvent(TrayIconEvent),
+    MenuEvent(MenuEvent),
+}
+
+struct TrayHandler {
+    quit: MenuItem,
+}
+
+impl ApplicationHandler<UserEvent> for TrayHandler {
+    fn resumed(&mut self, _event_loop: &ActiveEventLoop) {}
+
+    fn window_event(&mut self, _event_loop: &ActiveEventLoop, _id: WindowId, _event: WindowEvent) {}
+
+    fn user_event(&mut self, event_loop: &ActiveEventLoop, event: UserEvent) {
+        match event {
+            UserEvent::TrayIconEvent(_) => (),
+            UserEvent::MenuEvent(menu_event) => {
+                if menu_event.id == self.quit.id() {
+                    event_loop.exit();
+                }
             }
-        });
+        }
     }
 }

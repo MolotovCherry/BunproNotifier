@@ -1,8 +1,6 @@
 #![cfg_attr(all(not(debug_assertions), windows), windows_subsystem = "windows")]
 
 mod config;
-#[cfg(windows)]
-mod event_loop;
 mod objects;
 mod parker;
 #[cfg(windows)]
