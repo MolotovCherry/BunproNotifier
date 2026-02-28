@@ -4,6 +4,10 @@ A simple app that sends you system notifications when it's time to do your revie
 
 ![Screenshot of Notification](https://raw.githubusercontent.com/MolotovCherry/BunproNotifier/refs/heads/main/_doc/notification.png)
 
+## Refresh data
+
+By default, new data is pulled from the api every hour, but you can change this in the settings. If for any reason you need to refresh immediately, you can find the bunpro icon in the systray, right click on it, and click "Refresh Data".
+
 ## Closing app
 
 Find the bunpro icon in the systray, right click on it, and click "Quit".
