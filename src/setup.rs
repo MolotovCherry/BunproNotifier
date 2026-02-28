@@ -117,7 +117,7 @@ fn windows(tempdir: &Path) -> Result<(), Whatever> {
             .with_whatever_context(|e| format!("failed to open subkey: {e}"))?;
 
         if disposition == RegDisposition::REG_CREATED_NEW_KEY {
-            key.set_value("DisplayName", &"BunproNotifier")
+            key.set_value("DisplayName", &"Bunpro")
                 .with_whatever_context(|e| format!("failed to set DisplayName: {e}"))?;
             key.set_value("IconUri", &icon.as_os_str())
                 .with_whatever_context(|e| format!("failed to set DisplayName: {e}"))?;
