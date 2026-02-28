@@ -30,7 +30,6 @@ impl Daily {
             let mut today = Zoned::now().datetime();
 
             let mut data = combine_records(data, total_due, &config, today.date());
-            println!("{data:#?}");
 
             // do initial notify, and remove current hour from data
             if initial_notify && let Some(data) = data.remove(&today.date()) {
