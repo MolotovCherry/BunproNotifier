@@ -6,6 +6,8 @@ A simple app that sends you system notifications when it's time to do your revie
 
 The configuration mirrors the options on Bunpro's forecast section on the homepage.
 
+Note with regards to the api token, this is _not_ the api token found in your settings. The token needs to be found by observing the api request authorization header. It'll appear similar to `authorization: Token token=<token>`
+
 ```ron
 (
     account: (
