@@ -9,6 +9,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             .set_icon("_assets/logo.ico") // ordinal 1
             .set_manifest(MANIFEST)
             .compile()?;
+
+        println!("cargo::rerun-if-changed=_assets/logo.ico");
+        println!("cargo::rerun-if-changed=manifest.xml");
+        println!("cargo::rerun-if-changed=Cargo.toml");
     }
 
     let i = image::open("_assets/logo-original.png").unwrap();
