@@ -2,6 +2,12 @@
 
 A simple app that sends you system notifications when it's time to do your reviews.
 
+You may use the 3 buttons (windows only) on the toast to:
+
+- Grammar: Go straight into doing your grammar reviews
+- Vocab: Go straight into doing your vocab reviews
+- Dashboard: Go to your bunpro dashboard
+
 ![Screenshot of Notification](https://raw.githubusercontent.com/MolotovCherry/BunproNotifier/refs/heads/main/_doc/notification.png)
 
 ## Refresh data
