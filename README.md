@@ -30,10 +30,14 @@ Note with regards to the api token, this is _not_ the api token found in your se
         api_token: "<token_here>",
     ),
     forecast: (
-        // 1-65536 : How many hours between each poll
-        // (grabs updated information from bunpro api; you'll want this at quicker rates if
-        // actively doing reviews, so the program's cached info doesn't get stale)
-        poll_rate: 1,
+        // 1-65536 : How many minutes between each data update.
+        // Grabs updated information from bunpro api; you'll want this
+        // at quicker rates if actively doing reviews and interval is set
+        // to hourly, as the program's cached info could get stale.
+        //
+        // if interval is daily, interval should be set much higher, as
+        // there's no need to refresh every minute
+        update_rate: 1,
 
         // Hourly|Daily(hour: 0-23): Notify for reviews hourly or daily
         interval: Hourly, // or Daily( hour: 6 )

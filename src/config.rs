@@ -22,10 +22,14 @@ pub struct Account {
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Forecast {
-    /// 1-65536 : How many hours between each poll
-    /// (grabs updated information from bunpro api; you'll want this at quicker rates if
-    /// actively doing reviews, so the program's cached info doesn't get stale)
-    pub poll_rate: u16,
+    /// 1-65536 : How many minutes between each data update.
+    /// Grabs updated information from bunpro api; you'll want this
+    /// at quicker rates if actively doing reviews and interval is set
+    /// to hourly, as the program's cached info could get stale.
+    ///
+    /// if interval is daily, interval should be set much higher, as
+    /// there's no need to refresh every minute
+    pub update_rate: u16,
     /// Notify for reviews hourly or daily (every 24 hours)
     pub interval: ForecastInterval,
     /// Show total review count or new only count
@@ -43,7 +47,7 @@ impl Default for Forecast {
         Self {
             interval: Default::default(),
             count: Default::default(),
-            poll_rate: 1,
+            update_rate: 1,
             grammar: true,
             vocab: true,
             initial_notify: true,
