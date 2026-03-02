@@ -18,7 +18,7 @@ impl Hourly {
         total_due: Option<TotalDue>,
         config: Arc<Config>,
         initial_notify: bool,
-        token: AbortToken,
+        token: Arc<AbortToken>,
         mut notification: Notification,
     ) -> AbortToken {
         let (abortable, abort_token) = AbortableSleep::new();

@@ -1,12 +1,26 @@
 use std::{
     fs::OpenOptions,
-    io::{Read, Write},
+    io::{self, ErrorKind, Read, Write},
     path::PathBuf,
 };
 
 use ron::ser::PrettyConfig;
 use serde::{Deserialize, Serialize};
-use snafu::{Whatever, prelude::*};
+use snafu::prelude::*;
+
+#[derive(Debug, Snafu)]
+pub enum ConfigError {
+    #[snafu(display("couldn't find config file config.ron next to binary"))]
+    PathNotFound { source: io::Error },
+    #[snafu(display("Failed to read config file as String"))]
+    String { source: io::Error },
+    #[snafu(display("Failed to serialize config file"))]
+    Serialize { source: ron::Error },
+    #[snafu(display("Failed to deserialize config file"))]
+    Deserialize { source: ron::de::SpannedError },
+    #[snafu(display("{source}"))]
+    Io { source: io::Error },
+}
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Config {
@@ -72,54 +86,37 @@ pub enum ForecastCount {
 }
 
 impl Config {
-    pub fn new(path: impl Into<PathBuf>) -> Result<Self, Whatever> {
+    pub fn new(path: impl Into<PathBuf>) -> Result<Self, ConfigError> {
         let path = path.into();
-        let mut file = OpenOptions::new()
+        let file = OpenOptions::new()
             .create(true)
             .truncate(false)
             .write(true)
             .read(true)
-            .open(&path)
-            .with_whatever_context(|_| {
-                format!("Failed to load config file @ {path}", path = path.display())
-            })?;
+            .open(&path);
+
+        let mut file = match file {
+            Ok(f) => f,
+            Err(e) => match e.kind() {
+                ErrorKind::NotFound => return Err(e).context(PathNotFoundSnafu),
+                _ => return Err(e).context(IoSnafu),
+            },
+        };
 
         let mut data = String::new();
-        let read = file.read_to_string(&mut data).with_whatever_context(|_| {
-            format!(
-                "Failed to read config file as String @ {path}",
-                path = path.display()
-            )
-        })?;
+        let read = file.read_to_string(&mut data).context(StringSnafu)?;
 
         // if it's a new file, we need to write default config to it
         if read == 0 {
             let config = Self::default();
             let ser = ron::ser::to_string_pretty(&config, PrettyConfig::default())
-                .with_whatever_context(|_| {
-                    format!(
-                        "Failed to serialize config file @ {path}",
-                        path = path.display()
-                    )
-                })?;
-            file.write_all(ser.as_bytes()).with_whatever_context(|_| {
-                format!(
-                    "Failed to write config file @ {path}",
-                    path = path.display()
-                )
-            })?;
+                .context(SerializeSnafu)?;
+            file.write_all(ser.as_bytes()).context(IoSnafu)?;
 
             data = ser;
         }
 
-        let config = ron::from_str::<Self>(&data)
-            .map_err(Box::new)
-            .with_whatever_context(|_| {
-                format!(
-                    "Failed to deserialize config file @ {path}",
-                    path = path.display()
-                )
-            })?;
+        let config = ron::from_str::<Self>(&data).context(DeserializeSnafu)?;
 
         Ok(config)
     }

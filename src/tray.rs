@@ -1,3 +1,9 @@
+use std::{
+    sync::{Arc, LazyLock},
+    thread,
+};
+
+use crossbeam::channel::{Receiver, Sender, bounded};
 use tray_icon::{
     Icon, TrayIconBuilder, TrayIconEvent,
     menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
@@ -9,14 +15,26 @@ use winit::{
     window::WindowId,
 };
 
-use crate::run::ABORT_TOKEN;
+use crate::parker::AbortToken;
 
 static ICON: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/tray.bin"));
+pub static EXIT: LazyLock<ExitSignal> = LazyLock::new(|| {
+    let (tx, rx) = bounded(1);
+    ExitSignal(tx, rx)
+});
+
+pub struct ExitSignal(Sender<()>, Receiver<()>);
+
+impl ExitSignal {
+    pub fn signal(&self) {
+        _ = self.0.try_send(());
+    }
+}
 
 pub struct AppTray;
 
 impl AppTray {
-    pub fn run() {
+    pub fn run(abort_token: Arc<AbortToken>) {
         let icon = Icon::from_rgba(ICON.to_owned(), 256, 256).expect("rgba creation to succeed");
 
         let tray_menu = Menu::new();
@@ -72,7 +90,17 @@ impl AppTray {
             _ = proxy.send_event(UserEvent::MenuEvent(event));
         }));
 
-        let mut app = TrayHandler { quit, refresh };
+        let proxy = event_loop.create_proxy();
+        thread::spawn(move || {
+            _ = EXIT.1.recv();
+            _ = proxy.send_event(UserEvent::Quit);
+        });
+
+        let mut app = TrayHandler {
+            quit,
+            refresh,
+            abort_token,
+        };
         event_loop.run_app(&mut app).unwrap();
     }
 }
@@ -81,11 +109,13 @@ impl AppTray {
 enum UserEvent {
     TrayIconEvent(TrayIconEvent),
     MenuEvent(MenuEvent),
+    Quit,
 }
 
 struct TrayHandler {
     quit: MenuItem,
     refresh: MenuItem,
+    abort_token: Arc<AbortToken>,
 }
 
 impl ApplicationHandler<UserEvent> for TrayHandler {
@@ -96,17 +126,18 @@ impl ApplicationHandler<UserEvent> for TrayHandler {
     fn user_event(&mut self, event_loop: &ActiveEventLoop, event: UserEvent) {
         match event {
             UserEvent::TrayIconEvent(_) => (),
-            UserEvent::MenuEvent(menu_event) => {
-                if menu_event.id == self.quit.id() {
+
+            UserEvent::MenuEvent(MenuEvent { id }) => {
+                if id == self.quit.id() {
                     event_loop.exit();
                 }
 
-                if menu_event.id == self.refresh.id()
-                    && let Some(token) = ABORT_TOKEN.get()
-                {
-                    token.abort();
+                if id == self.refresh.id() {
+                    self.abort_token.abort();
                 }
             }
+
+            UserEvent::Quit => event_loop.exit(),
         }
     }
 }

@@ -1,9 +1,9 @@
-use std::{
-    sync::mpsc::{Receiver, SyncSender, sync_channel},
-    time::Duration,
-};
+use std::time::Duration;
 
-use crossbeam::sync::{Parker, Unparker};
+use crossbeam::{
+    channel::{Receiver, Sender, bounded},
+    sync::{Parker, Unparker},
+};
 
 #[derive(Debug)]
 pub enum WakeReason {
@@ -15,7 +15,7 @@ pub struct AbortableSleep(Parker, Receiver<WakeReason>);
 
 impl AbortableSleep {
     pub fn new() -> (Self, AbortToken) {
-        let (tx, rx) = sync_channel(1);
+        let (tx, rx) = bounded(1);
 
         let p = Parker::new();
         let unparker = p.unparker().clone();
@@ -29,7 +29,7 @@ impl AbortableSleep {
 }
 
 #[derive(Clone, Debug)]
-pub struct AbortToken(Unparker, SyncSender<WakeReason>);
+pub struct AbortToken(Unparker, Sender<WakeReason>);
 
 impl AbortToken {
     pub fn abort(&self) {

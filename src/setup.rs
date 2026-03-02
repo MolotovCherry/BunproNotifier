@@ -10,7 +10,7 @@ use env_logger::Env;
 use log::{LevelFilter, error};
 use snafu::{OptionExt, ResultExt, Whatever};
 
-use crate::{APP_ID, ASSETS, popup::epopup};
+use crate::{APP_ID, ASSETS, popup::epopup, tray::EXIT};
 
 pub fn setup() -> Result<(), Whatever> {
     set_hook();
@@ -137,7 +137,9 @@ fn windows(tempdir: &Path) -> Result<(), Whatever> {
 fn set_hook() {
     panic::set_hook(Box::new(|info| {
         epopup!(info);
-
         eprintln!("{info}");
+
+        // exit event loop
+        EXIT.signal();
     }));
 }

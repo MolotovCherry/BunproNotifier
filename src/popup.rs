@@ -49,7 +49,7 @@ pub fn popup<T: AsRef<str>, M: AsRef<str>>(title: T, message: M, icon: MessageBo
 }
 
 macro_rules! epopup {
-    ($error:ident) => {
+    ($error:expr) => {
         #[cfg(windows)]
         {
             use crate::popup::{MessageBoxIcon, popup};
